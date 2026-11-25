@@ -1,0 +1,7 @@
+#!/bin/sh
+# Starts the bridge with a real node binary: the shell's PATH may put a version
+# manager's shim first, which is slow to start or missing a default version.
+for n in "$CLAWCHAT_NODE" /usr/bin/node /usr/local/bin/node; do
+  [ -n "$n" ] && [ -x "$n" ] && exec "$n" "$@"
+done
+exec node "$@"

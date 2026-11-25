@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "theo.clawchat",
+  "name": "Clawchat",
+  "version": "0.1.0",
+  "author": "theo",
+  "license": "MIT",
+  "description": "Hold F8 to talk to your OpenClaw agent from a small window in the middle of the screen: voice via Voxtype, recent chat history, replies streamed over the gateway.",
+  "kinds": [
+    "service",
+    "overlay"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml",
+    "overlay": "Overlay.qml"
+  }
+}

@@ -1,0 +1,33 @@
+#!/bin/bash
+# Voxtype recording for the clawchat overlay: the transcript goes to a file that
+# Service.qml reads, instead of being typed, and voxtype's own OSD stays hidden.
+#
+#   voice start    start recording
+#   voice stop     stop and transcribe
+#   voice cancel   throw the recording away
+#   voice poll     line 1: voxtype status, line 2: outcome.json, rest: transcript
+FILE="${XDG_RUNTIME_DIR:-/tmp}/theo.clawchat-dictation.txt"
+
+if [[ ${1:-} == poll ]]; then
+  voxtype status 2>/dev/null || echo stopped
+  tr -d '\n' < "${XDG_RUNTIME_DIR:-/tmp}/voxtype/outcome.json" 2>/dev/null; echo
+  cat "$FILE" 2>/dev/null
+  exit 0
+fi
+
+# One lock so start/stop/cancel keep their order. Point CLAWCHAT_VOICE_LOCK at the
+# lock of your own dictation script to keep the two from interleaving.
+exec 9>"${CLAWCHAT_VOICE_LOCK:-${XDG_RUNTIME_DIR:-/tmp}/dictation-by-layout.lock}"
+flock -w 5 9 || exit 1
+
+case "${1:-}" in
+  start)
+    # Another dictation is already running: leave it alone.
+    [[ $(voxtype status 2>/dev/null) == idle ]] || exit 2
+    : > "$FILE"
+    voxtype record start --file="$FILE" --no-osd
+    ;;
+  stop) [[ $(voxtype status 2>/dev/null) == stopped ]] || voxtype record stop ;;
+  cancel) voxtype record cancel ;;
+  *) echo "usage: voice start|stop|cancel|poll" >&2; exit 64 ;;
+esac
